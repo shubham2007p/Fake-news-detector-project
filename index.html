@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -117,34 +117,27 @@
                     <div class="panel-header">
                         <div class="panel-header-left">
                             <div class="panel-icon">
-                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                             </div>
                             <span>Article Input</span>
                         </div>
-                        <span class="char-counter" id="char-counter">0 characters</span>
+                        <div class="char-counter" id="char-counter">0 characters</div>
                     </div>
 
-                    <form id="news-form" class="news-form" onsubmit="return false;">
-                        <div class="form-group">
-                            <label for="headline-input" class="form-label">Headline / Title</label>
-                            <input
-                                type="text"
-                                id="headline-input"
-                                class="form-control"
-                                placeholder="Paste the news headline here..."
-                                autocomplete="off"
-                            >
+                    <div class="form-stack">
+                        <div class="form-field">
+                            <label for="headline-input">Headline / Title</label>
+                            <input type="text" id="headline-input"
+                                placeholder="Paste or type the news headline…"
+                                autocomplete="off" spellcheck="false">
                         </div>
 
-                        <div class="form-group flex-1">
-                            <label for="body-input" class="form-label">Article Body / Content</label>
-                            <textarea
-                                id="body-input"
-                                class="form-control textarea-control"
-                                placeholder="Paste full article text, claims, or social media statements here for deeper analysis..."
-                            ></textarea>
+                        <div class="form-field">
+                            <label for="body-input">Article Body <span class="optional-tag">optional</span></label>
+                            <textarea id="body-input" rows="9"
+                                placeholder="Paste the full article text here for a deeper analysis…"></textarea>
                         </div>
-                    </form>
+                    </div>
 
                     <div class="input-actions">
                         <button id="analyze-btn" class="btn btn-analyze" title="Press Enter or Ctrl+Enter to analyze">
@@ -299,7 +292,7 @@
                         <div class="evidence-block">
                             <div class="tab-bar">
                                 <button class="tab-btn active" data-tab="news">
-                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2zm0 0H4a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/></svg>
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1 2 2zm0 0H4a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/></svg>
                                     Live News
                                     <span class="tab-count" id="news-count">0</span>
                                 </button>
@@ -314,6 +307,8 @@
                                     <p class="no-evidence">No matching articles found.</p>
                                 </div>
                             </div>
+                        </div>
+
                         <!-- Interactive Active Learning / Teach the System Card -->
                         <div class="feedback-card" style="margin-top: 16px; padding: 14px 16px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md);">
                             <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); display: flex; align-items: center; justify-content: space-between;">
