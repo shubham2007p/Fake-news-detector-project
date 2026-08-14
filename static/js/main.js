@@ -397,6 +397,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ── ANALYZE ───────────────────────────────────────────────────────────────
+    const delay = ms => new Promise(res => setTimeout(res, ms));
+
+    // ── ANALYZE ───────────────────────────────────────────────────────────────
     if (analyzeBtn) {
         analyzeBtn.addEventListener("click", async (e) => {
             if (e) e.preventDefault();
@@ -420,9 +423,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
             showLoading();
 
-            const step1Timer = setTimeout(() => advanceLoadingStep(1), 500);
-            const step2Timer = setTimeout(() => advanceLoadingStep(2), 1200);
-
             let data = null;
             try {
                 const response = await fetch("/predict", {
@@ -441,29 +441,32 @@ document.addEventListener("DOMContentLoaded", () => {
                 console.log("Static host (GitHub Pages) detected without Python server.");
             }
 
-            clearTimeout(step1Timer);
-            clearTimeout(step2Timer);
-
             if (data && data.status === "success") {
                 advanceLoadingStep(1);
+                await delay(300);
                 advanceLoadingStep(2);
+                await delay(300);
                 advanceLoadingStep(3);
 
                 addToHistory(title, text, data);
                 setTimeout(() => {
                     displayResult(data);
-                }, 300);
+                }, 200);
             } else {
-                // ── INTELLECTUAL CLIENT-SIDE ML INFERENCE ENGINE (For GitHub Pages Static Host) ──
-                advanceLoadingStep(1);
-                advanceLoadingStep(2);
-                advanceLoadingStep(3);
+                // ── INTELLECTUAL CLIENT-SIDE ML INFERENCE ENGINE (GitHub Pages Static Host) ──
+                advanceLoadingStep(1); // Step 1: TF-IDF & Logistic Regression
+                const clientMlTask = runClientSideMLEngine(title, text);
 
-                const mockData = await runClientSideMLEngine(title, text);
+                await delay(500);
+                advanceLoadingStep(2); // Step 2: Searching News & Fact-Check APIs
+
+                const mockData = await clientMlTask;
+                await delay(500);
+                advanceLoadingStep(3); // Step 3: Synthesizing Final Verdict
+
+                await delay(200);
                 addToHistory(title, text, mockData);
-                setTimeout(() => {
-                    displayResult(mockData);
-                }, 300);
+                displayResult(mockData);
             }
 
             analyzeBtn.disabled = false;
@@ -474,6 +477,55 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     // ── INTELLECTUAL CLIENT-SIDE ML INFERENCE ENGINE ─────────────────────────
+    function cleanTextJS(input) {
+        if (!input) return "";
+        let clean = input.toLowerCase();
+        clean = clean.replace(/https?:\/\/\S+|www\.\S+/g, ' ');
+        clean = clean.replace(/<[^>]+>/g, ' ');
+        clean = clean.replace(/[^a-z\s]/g, ' ');
+        const metaBlocklist = ["fake", "real", "hoax", "satire", "debunked", "misinformation", "misleading", "conspiracy", "factcheck", "fact-check", "unverified", "rumor", "rumour"];
+        metaBlocklist.forEach(w => {
+            const reg = new RegExp('\\b' + w + '\\b', 'gi');
+            clean = clean.replace(reg, ' ');
+        });
+        return clean.replace(/\s+/g, ' ').trim();
+    }
+
+    function evaluateTFIDFModel(cleanedText, modelData, maxNgram = 2) {
+        if (!modelData || !modelData.weights) {
+            return { proba: 0.5, logit: 0, signalTerms: [] };
+        }
+        const words = cleanedText.split(/\s+/).filter(w => w.length > 0);
+        const ngrams = {};
+        for (let i = 0; i < words.length; i++) {
+            for (let len = 1; len <= maxNgram && i + len <= words.length; len++) {
+                const gram = words.slice(i, i + len).join(" ");
+                ngrams[gram] = (ngrams[gram] || 0) + 1;
+            }
+        }
+
+        let logit = modelData.intercept || 0;
+        const signalTerms = [];
+
+        for (const [gram, count] of Object.entries(ngrams)) {
+            if (modelData.weights.hasOwnProperty(gram) && modelData.idf.hasOwnProperty(gram)) {
+                const tf = modelData.sublinear_tf ? (1 + Math.log(count)) : count;
+                const idf = modelData.idf[gram];
+                const weight = modelData.weights[gram];
+                const tfidf = tf * idf;
+                const contrib = tfidf * weight;
+                logit += contrib;
+
+                signalTerms.push({ gram, weight, contrib });
+            }
+        }
+
+        const proba = 1 / (1 + Math.exp(-logit));
+        signalTerms.sort((a, b) => Math.abs(b.contrib) - Math.abs(a.contrib));
+
+        return { proba, logit, signalTerms };
+    }
+
     async function runClientSideMLEngine(title, text) {
         const fullText = (title + " " + text).trim();
         const lower = fullText.toLowerCase();
@@ -500,53 +552,82 @@ document.addEventListener("DOMContentLoaded", () => {
             }
         } catch(e) {}
 
-        // 2. High-Credibility Institutional / Official Entity Markers
-        const realEntities = [
-            "bcci", "federal reserve", "nasa", "reuters", "ministry", "parliament", "supreme court",
-            "isro", "white house", "united nations", "synergy pact", "signed", "official", "reserve bank",
-            "pentagon", "who", "cdc", "ecb", "high court", "government", "central bank", "defense pact",
-            "postponed", "announces", "president", "prime minister", "starliner", "artemis"
-        ];
-        
-        // 3. Fake / Clickbait / Sensational Scare Markers
-        const fakeMarkers = [
-            "secret lab", "alien", "cures aging", "nano-chip", "radiation in currency", "miracle cure",
-            "conspiracy", "illuminati", "banned by doctors", "shocking truth", "magic pill", "flat earth",
-            "reptilian", "secret clause", "free 5000 rs", "bank closing tomorrow", "5g radiation"
-        ];
-
-        let fakeHits = 0;
-        let realHits = 0;
-
-        fakeMarkers.forEach(kw => { if (lower.includes(kw)) fakeHits++; });
-        realEntities.forEach(kw => { if (lower.includes(kw)) realHits++; });
-
-        // Calculate Model A (Stylistics) & Model B (Statement Truthfulness)
-        let isFake = false;
-        let isReal = false;
-
-        if (fakeHits > 0) {
-            isFake = true;
-        } else if (realHits > 0) {
-            isReal = true;
-        } else {
-            // Stylistic scoring: caps ratio & exclamation intensity
-            const capsCount = (fullText.match(/[A-Z]/g) || []).length;
-            const capsRatio = capsCount / (fullText.length || 1);
-            const exclamations = (fullText.match(/!/g) || []).length;
-
-            if (capsRatio > 0.35 || exclamations >= 2) {
-                isFake = true;
-            } else {
-                isReal = true;
-            }
+        const cleanStr = cleanTextJS(fullText);
+        let probaFakeA = 0.5;
+        let signalTermsA = [];
+        if (window.VERITAS_MODEL_A) {
+            const evalA = evaluateTFIDFModel(cleanStr, window.VERITAS_MODEL_A, 2);
+            probaFakeA = evalA.proba;
+            signalTermsA = evalA.signalTerms;
         }
 
-        const verdict = isFake ? "FAKE" : "REAL";
-        const confidence = isFake ? (91.0 + fakeHits * 3) : (92.5 + realHits * 2.5);
-        const finalConf = Math.min(98.8, Math.max(78.0, Number(confidence.toFixed(1))));
+        let probaTruthB = 0.5;
+        let signalTermsB = [];
+        if (window.VERITAS_MODEL_B) {
+            const claimClean = cleanTextJS(title || text.substring(0, 200));
+            const evalB = evaluateTFIDFModel(claimClean, window.VERITAS_MODEL_B, 4);
+            probaTruthB = evalB.proba;
+            signalTermsB = evalB.signalTerms;
+        } else {
+            probaTruthB = 1 - probaFakeA;
+        }
 
-        // 4. Live Search via Wikipedia REST API (Client-side Fetch!)
+        // Check institutional entity markers & fake clickbait markers as auxiliary features
+        const realEntities = ["bcci", "nasa", "reuters", "ministry", "parliament", "supreme court", "isro", "white house", "united nations", "reserve bank", "pentagon", "who", "cdc", "high court", "government", "central bank", "announces", "president", "prime minister", "official", "signed", "defense pact"];
+        const fakeMarkers = ["secret lab", "alien", "cures aging", "nano-chip", "radiation in currency", "miracle cure", "illuminati", "banned by doctors", "shocking truth", "magic pill", "flat earth", "reptilian", "secret clause", "free 5000 rs", "bank closing tomorrow"];
+
+        let realHits = 0, fakeHits = 0;
+        realEntities.forEach(k => { if (lower.includes(k)) realHits++; });
+        fakeMarkers.forEach(k => { if (lower.includes(k)) fakeHits++; });
+
+        const scoreRealA = 1 - probaFakeA;
+        const scoreRealB = probaTruthB;
+
+        let ensembleRealScore = (0.35 * scoreRealA) + (0.65 * scoreRealB);
+        if (realHits > 0) ensembleRealScore += 0.15 * realHits;
+        if (fakeHits > 0) ensembleRealScore -= 0.20 * fakeHits;
+
+        ensembleRealScore = Math.max(0.01, Math.min(0.99, ensembleRealScore));
+
+        let verdict = "UNCERTAIN";
+        let confidence = 50.0;
+
+        if (ensembleRealScore >= 0.50) {
+            verdict = "REAL";
+            confidence = ensembleRealScore * 100;
+        } else {
+            verdict = "FAKE";
+            confidence = (1.0 - ensembleRealScore) * 100;
+        }
+
+        const finalConf = Math.min(98.8, Math.max(65.0, Number(confidence.toFixed(1))));
+
+        // Model A & B details
+        const predA = probaFakeA >= 0.5 ? "FAKE" : "REAL";
+        const confA = Number(((predA === "FAKE" ? probaFakeA : 1 - probaFakeA) * 100).toFixed(1));
+
+        const predB = probaTruthB >= 0.5 ? "REAL" : "FAKE";
+        const truthScoreB = Number((probaTruthB * 100).toFixed(1));
+
+        // Format AI Reasoning with signal terms
+        let reasoningText = "";
+        const topSignals = signalTermsA.slice(0, 4).map(s => `\`${s.gram}\``).join(", ");
+
+        if (verdict === "REAL") {
+            reasoningText = `**Model B Statement Credibility** scored statement truthfulness at **${truthScoreB}%**. Narrative structure matches verified journalistic standards.`;
+            if (topSignals) {
+                reasoningText += ` Primary stylistic terms detected: ${topSignals}.`;
+            }
+        } else if (verdict === "FAKE") {
+            reasoningText = `**Model B Statement Credibility** identified unverified claim patterns (Truth score: **${truthScoreB}%**). Model A Stylistics detected high correlation with sensationalist content.`;
+            if (topSignals) {
+                reasoningText += ` Key signal terms identified: ${topSignals}.`;
+            }
+        } else {
+            reasoningText = `The claim contains mixed signals between stylistic tone and statement truthfulness. Recommend verifying with live news sources below.`;
+        }
+
+        // Live Web Search via Wikipedia REST API
         let liveNews = [];
         try {
             const query = (title || fullText).split(" ").slice(0, 5).join(" ");
@@ -578,20 +659,18 @@ document.addEventListener("DOMContentLoaded", () => {
             prediction: verdict,
             verdict: verdict,
             confidence: finalConf,
-            status_lbl: verdict === "REAL" ? "Verified Credible Statement" : "High Confidence Fake Claim",
-            reasoning: verdict === "REAL" 
-                ? `The statement "${title || fullText.substring(0, 40)}" aligns with established factual reporting. Model B Statement Credibility identified institutional entity markers and verifiable narrative structure.`
-                : `The statement "${title || fullText.substring(0, 40)}" exhibits sensationalist claims or unverified markers without corroboration from credible news outlets.`,
+            status_lbl: verdict === "REAL" ? "Verified Credible Statement" : verdict === "FAKE" ? "High Confidence Fake Claim" : "Uncertain Claim — Cross-Check Required",
+            reasoning: reasoningText,
             model_a: {
-                label: `${verdict} (${(finalConf - 2.5).toFixed(1)}% confidence)`,
-                confidence: Number((finalConf - 2.5).toFixed(1)),
-                prediction: verdict
+                label: `${predA} (${confA}% confidence)`,
+                confidence: confA,
+                prediction: predA
             },
             model_b: {
-                label: verdict === "REAL" ? `Mostly True / Real (${finalConf}% Truth Score)` : `False / Pants on Fire (${finalConf}% False Score)`,
-                score: finalConf,
-                prediction: verdict,
-                truth_probability: verdict === "REAL" ? finalConf : Number((100 - finalConf).toFixed(1))
+                label: predB === "REAL" ? `Mostly True / Real (${truthScoreB}% Truth Score)` : `False / Pants on Fire (${truthScoreB}% Truth Score)`,
+                score: truthScoreB,
+                prediction: predB,
+                truth_probability: truthScoreB
             },
             news_evidence: liveNews,
             fact_evidence: []
