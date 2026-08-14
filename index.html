@@ -235,14 +235,16 @@
                                 </div>
                             </div>
                             <div class="verdict-hero-right">
-                                <div class="donut-chart-container">
-                                    <svg class="donut-svg" viewBox="0 0 80 80">
-                                        <circle class="donut-bg" cx="40" cy="40" r="32"/>
-                                        <circle class="donut-fill" id="donut-fill" cx="40" cy="40" r="32"/>
+                                <div class="confidence-donut-wrap">
+                                    <svg class="donut-svg" viewBox="0 0 80 80" width="80" height="80">
+                                        <circle class="donut-bg" cx="40" cy="40" r="32" fill="none" stroke-width="8"/>
+                                        <circle class="donut-fill" id="donut-fill" cx="40" cy="40" r="32" fill="none" stroke-width="8"
+                                            stroke-dasharray="201.06" stroke-dashoffset="201.06" stroke-linecap="round"
+                                            transform="rotate(-90 40 40)"/>
                                     </svg>
-                                    <div class="donut-text">
+                                    <div class="donut-center">
                                         <span class="donut-pct" id="donut-pct">0%</span>
-                                        <span class="donut-label">Conf.</span>
+                                        <span class="donut-pct-label">Conf.</span>
                                     </div>
                                 </div>
                             </div>
