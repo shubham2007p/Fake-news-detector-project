@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fake News Detector - Premium ML & Web Verification</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">📰</div>
+                <h2>Fake News Detector</h2>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3>🔍 Technical Details</h3>
+                <ul class="spec-list">
+                    <li>
+                        <span class="spec-label">Algorithm</span>
+                        <span class="spec-val">Logistic Regression</span>
+                    </li>
+                    <li>
+                        <span class="spec-label">Feature Extraction</span>
+                        <span class="spec-val">TF-IDF Vectorizer</span>
+                    </li>
+                    <li>
+                        <span class="spec-label">Vocabulary Size</span>
+                        <span class="spec-val">5,000 Unigrams/Bigrams</span>
+                    </li>
+                    <li>
+                        <span class="spec-label">Dataset</span>
+                        <span class="spec-val">Lutz Hamel's Corpus</span>
+                    </li>
+                </ul>
+            </div>
+            
+            <div class="sidebar-section">
+                <h3>📈 Performance Metrics</h3>
+                <div class="metric-grid">
+                    <div class="metric-card">
+                        <div class="metric-num">92.34%</div>
+                        <div class="metric-lbl">Accuracy</div>
+                    </div>
+                    <div class="metric-card">
+                        <div class="metric-num">92.0%</div>
+                        <div class="metric-lbl">F1-Score</div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if cm_exists %}
+            <div class="sidebar-section">
+                <h3>📊 Confusion Matrix</h3>
+                <div class="image-wrapper">
+                    <img src="{{ url_for('static', filename='confusion_matrix.png') }}" alt="Model Evaluation Confusion Matrix">
+                </div>
+            </div>
+            {% endif %}
+        </aside>
+
+        <!-- Main Workspace -->
+        <main class="main-content">
+            <header class="main-header">
+                <h1>Linguistic & Web Verification System</h1>
+                <p class="subtitle">Evaluate news headlines and article body texts using a combined strategy: local ML modeling (TF-IDF + LR) paired with live web search (News API & Fact Check Tools).</p>
+            </header>
+
+            <section class="analysis-section">
+                <div class="card editor-card">
+                    <h3>Input Details</h3>
+                    <div class="form-group">
+                        <label for="headline-input">News Title / Headline</label>
+                        <input type="text" id="headline-input" placeholder="e.g. Government announces new economic reforms..." autocomplete="off">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="body-input">News Body Content</label>
+                        <textarea id="body-input" placeholder="Paste the complete text content of the news article here..." rows="12"></textarea>
+                    </div>
+
+                    <div class="editor-actions">
+                        <button id="analyze-btn" class="btn btn-primary">🚀 Analyze News Article</button>
+                        <button id="clear-btn" class="btn btn-secondary">Clear</button>
+                    </div>
+                </div>
+
+                <div class="card result-card" id="result-placeholder">
+                    <div class="placeholder-content">
+                        <div class="placeholder-icon">🔍</div>
+                        <h3>Awaiting Input</h3>
+                        <p>Provide a news headline or content on the left, then trigger analysis to see classification outcomes and confidence percentages.</p>
+                    </div>
+                </div>
+
+                <!-- Complete prediction results layout -->
+                <div class="card result-card hidden" id="result-display">
+                    <div class="result-header">
+                        <h3>Verdict Analysis</h3>
+                        <div id="badge-container"></div>
+                    </div>
+                    
+                    <div class="status-indicator">
+                        <span class="status-label">Verification Status:</span>
+                        <strong id="status-label-value">Unverified</strong>
+                    </div>
+
+                    <div class="confidence-section">
+                        <div class="meter-label">
+                            <span>Local Model Confidence</span>
+                            <span id="confidence-percentage" class="percentage-value">0.0%</span>
+                        </div>
+                        <div class="meter-bar">
+                            <div class="meter-fill" id="confidence-fill"></div>
+                        </div>
+                    </div>
+
+                    <div class="verdict-explanation">
+                        <h4>System Decision Reasoning</h4>
+                        <p id="explanation-text"></p>
+                    </div>
+
+                    <!-- Web evidence output -->
+                    <div class="web-evidence-section">
+                        <h4>🌐 External Web References</h4>
+                        <div id="news-results-list" class="evidence-list">
+                            <p class="no-evidence">No matching news articles found on the live web.</p>
+                        </div>
+                    </div>
+
+                    <!-- Fact checks output -->
+                    <div class="web-evidence-section">
+                        <h4>🛡️ Existing Fact-Check Evaluations</h4>
+                        <div id="fact-results-list" class="evidence-list">
+                            <p class="no-evidence">No existing fact checks found for this topic.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="samples-section">
+                <h3>💡 Run Demo Samples</h3>
+                <div class="samples-grid">
+                    <div class="sample-box" data-type="real">
+                        <span class="sample-tag real-tag">REAL NEWS</span>
+                        <h4>Federal Reserve holds interest rates steady</h4>
+                        <p>The Federal Reserve on Wednesday kept its benchmark interest rate unchanged, pointing to solid economic growth and persistent but moderating inflation, opting to wait for further signs of pricing stability before making adjustments.</p>
+                    </div>
+                    <div class="sample-box" data-type="fake">
+                        <span class="sample-tag fake-tag">FAKE NEWS</span>
+                        <h4>Secret lab discovers space technology that cures aging</h4>
+                        <p>An anonymous military official has revealed that a secret underground laboratory has successfully reverse-engineered alien propulsion technology to cure human aging and eradicate all cellular diseases within days.</p>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+</body>
+</html>
