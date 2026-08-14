@@ -55,6 +55,27 @@ def predict():
         return jsonify({"status": "error", "message": "Please enter a headline or content body"}), 400
         
     try:
+        # Step 0: Active Learning Ground-Truth Memory Check
+        from feedback import check_feedback_memory
+        full_input = (title + " " + text).strip()
+        mem_res = check_feedback_memory(full_input)
+
+        if mem_res:
+            print(f"DEBUG: Active Learning Memory Match -> {mem_res['prediction']}")
+            return jsonify({
+                "status": "success",
+                "prediction": mem_res["prediction"],
+                "confidence": mem_res["confidence"],
+                "model_a": {"name": "Active Learning Memory", "prediction": mem_res["prediction"], "confidence": mem_res["confidence"]},
+                "model_b": {"name": "Active Learning Ground-Truth", "prediction": mem_res["prediction"], "truth_probability": mem_res["confidence"]},
+                "verdict": mem_res["prediction"],
+                "status_lbl": f"Verified {mem_res['prediction'].capitalize()} (User Taught)",
+                "reasoning": mem_res["reasoning"],
+                "has_conflict": False,
+                "news_evidence": [],
+                "fact_evidence": []
+            })
+
         # Step 1: Run local ML model
         ml_result = classifier.predict(title, text)
         
@@ -77,6 +98,8 @@ def predict():
             "status": "success",
             "prediction": ml_result["prediction"],
             "confidence": ml_result["confidence"],
+            "model_a": ml_result.get("model_a"),
+            "model_b": ml_result.get("model_b"),
             "verdict": final_result["verdict"],
             "status_lbl": final_result["status"],
             "reasoning": final_result["reasoning"],
@@ -86,6 +109,32 @@ def predict():
         })
     except Exception as e:
         return jsonify({"status": "error", "message": str(e)}), 500
+
+
+@app.route('/feedback', methods=['POST'])
+def feedback():
+    """Active Learning: Receives user correction (REAL or FAKE) and updates Model A parameters."""
+    from feedback import record_feedback
+    data = request.get_json()
+    if not data:
+        return jsonify({"status": "error", "message": "No data provided"}), 400
+
+    text = data.get("text", "").strip()
+    label = data.get("label", "").strip()
+
+    if not text or not label:
+        return jsonify({"status": "error", "message": "Missing text or label"}), 400
+
+    res = record_feedback(text, label)
+
+    # Reload classifier model weights
+    global classifier
+    try:
+        classifier = FakeNewsClassifier()
+    except Exception as e:
+        print(f"Classifier reload warning: {e}")
+
+    return jsonify(res)
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

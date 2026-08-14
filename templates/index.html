@@ -3,161 +3,348 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fake News Detector - Premium ML & Web Verification</title>
+    <title>VeritasAI — Intelligent Fake News Detector</title>
+    <meta name="description" content="VeritasAI uses machine learning and live web intelligence to detect fake news with confidence scoring and evidence trails.">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-    <div class="app-container">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <div class="logo">📰</div>
-                <h2>Fake News Detector</h2>
+    <div class="app-shell">
+
+        <!-- LEFT SIDEBAR -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Logo / Brand -->
+            <div class="sidebar-brand">
+                <div class="brand-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                </div>
+                <span class="brand-name">VeritasAI</span>
+                <button class="sidebar-toggle" id="sidebar-toggle" title="Collapse sidebar">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                </button>
             </div>
-            
-            <div class="sidebar-section">
-                <h3>🔍 Technical Details</h3>
-                <ul class="spec-list">
-                    <li>
-                        <span class="spec-label">Algorithm</span>
-                        <span class="spec-val">Logistic Regression</span>
-                    </li>
-                    <li>
-                        <span class="spec-label">Feature Extraction</span>
-                        <span class="spec-val">TF-IDF Vectorizer</span>
-                    </li>
-                    <li>
-                        <span class="spec-label">Vocabulary Size</span>
-                        <span class="spec-val">5,000 Unigrams/Bigrams</span>
-                    </li>
-                    <li>
-                        <span class="spec-label">Dataset</span>
-                        <span class="spec-val">Lutz Hamel's Corpus</span>
-                    </li>
-                </ul>
-            </div>
-            
-            <div class="sidebar-section">
-                <h3>📈 Performance Metrics</h3>
-                <div class="metric-grid">
-                    <div class="metric-card">
-                        <div class="metric-num">92.34%</div>
-                        <div class="metric-lbl">Accuracy</div>
-                    </div>
-                    <div class="metric-card">
-                        <div class="metric-num">92.0%</div>
-                        <div class="metric-lbl">F1-Score</div>
+
+            <!-- New Analysis Button -->
+            <button class="btn-new-analysis" id="new-analysis-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span>New Analysis</span>
+            </button>
+
+            <!-- History Section -->
+            <div class="sidebar-section history-section">
+                <div class="section-label">Recent Analyses</div>
+                <div class="history-list" id="history-list">
+                    <div class="history-empty">
+                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        <p>No analyses yet</p>
                     </div>
                 </div>
             </div>
-            
-            {% if cm_exists %}
-            <div class="sidebar-section">
-                <h3>📊 Confusion Matrix</h3>
-                <div class="image-wrapper">
-                    <img src="{{ url_for('static', filename='confusion_matrix.png') }}" alt="Model Evaluation Confusion Matrix">
+
+            <!-- Spacer -->
+            <div class="sidebar-spacer"></div>
+
+            <!-- Model Stats (bottom of sidebar) -->
+            <div class="sidebar-section model-stats-section">
+                <div class="section-label">Model Performance</div>
+                <div class="stat-row">
+                    <span class="stat-label">Accuracy</span>
+                    <span class="stat-value stat-good">92.3%</span>
                 </div>
+                <div class="stat-row">
+                    <span class="stat-label">F1-Score</span>
+                    <span class="stat-value stat-good">92.0%</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Algorithm</span>
+                    <span class="stat-value">LR + TF-IDF</span>
+                </div>
+                <div class="stat-row">
+                    <span class="stat-label">Vocabulary</span>
+                    <span class="stat-value">5K n-grams</span>
+                </div>
+                {% if cm_exists %}
+                <div class="cm-wrapper">
+                    <img src="{{ url_for('static', filename='confusion_matrix.png') }}" alt="Confusion Matrix">
+                </div>
+                {% endif %}
             </div>
-            {% endif %}
+
+            <!-- Clear History Button -->
+            <button class="btn-clear-history" id="clear-history-btn" title="Clear all history">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>
+                <span>Clear History</span>
+            </button>
         </aside>
 
-        <!-- Main Workspace -->
-        <main class="main-content">
-            <header class="main-header">
-                <h1>Linguistic & Web Verification System</h1>
-                <p class="subtitle">Evaluate news headlines and article body texts using a combined strategy: local ML modeling (TF-IDF + LR) paired with live web search (News API & Fact Check Tools).</p>
+        <!-- MAIN WORKSPACE -->
+        <main class="workspace" id="workspace">
+
+            <!-- Top Bar -->
+            <header class="topbar">
+                <button class="topbar-toggle-btn" id="topbar-toggle-btn" title="Toggle sidebar">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+                </button>
+                <div class="topbar-title">
+                    <h1>News Verification Engine</h1>
+                </div>
+                <button class="theme-toggle" id="theme-toggle" title="Toggle light / dark mode" aria-label="Toggle theme">
+                    <!-- Moon icon (shown in dark mode) -->
+                    <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                    </svg>
+                    <!-- Sun icon (shown in light mode) -->
+                    <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="5"/>
+                        <line x1="12" y1="1" x2="12" y2="3"/>
+                        <line x1="12" y1="21" x2="12" y2="23"/>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                        <line x1="1" y1="12" x2="3" y2="12"/>
+                        <line x1="21" y1="12" x2="23" y2="12"/>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                    </svg>
+                </button>
+                <div class="topbar-badge">
+                    <span class="live-dot"></span>
+                    Live Intelligence
+                </div>
             </header>
 
-            <section class="analysis-section">
-                <div class="card editor-card">
-                    <h3>Input Details</h3>
-                    <div class="form-group">
-                        <label for="headline-input">News Title / Headline</label>
-                        <input type="text" id="headline-input" placeholder="e.g. Government announces new economic reforms..." autocomplete="off">
-                    </div>
-                    
-                    <div class="form-group">
-                        <label for="body-input">News Body Content</label>
-                        <textarea id="body-input" placeholder="Paste the complete text content of the news article here..." rows="12"></textarea>
-                    </div>
+            <!-- Content Area -->
+            <div class="content-area">
 
-                    <div class="editor-actions">
-                        <button id="analyze-btn" class="btn btn-primary">🚀 Analyze News Article</button>
-                        <button id="clear-btn" class="btn btn-secondary">Clear</button>
-                    </div>
-                </div>
-
-                <div class="card result-card" id="result-placeholder">
-                    <div class="placeholder-content">
-                        <div class="placeholder-icon">🔍</div>
-                        <h3>Awaiting Input</h3>
-                        <p>Provide a news headline or content on the left, then trigger analysis to see classification outcomes and confidence percentages.</p>
-                    </div>
-                </div>
-
-                <!-- Complete prediction results layout -->
-                <div class="card result-card hidden" id="result-display">
-                    <div class="result-header">
-                        <h3>Verdict Analysis</h3>
-                        <div id="badge-container"></div>
-                    </div>
-                    
-                    <div class="status-indicator">
-                        <span class="status-label">Verification Status:</span>
-                        <strong id="status-label-value">Unverified</strong>
-                    </div>
-
-                    <div class="confidence-section">
-                        <div class="meter-label">
-                            <span>Local Model Confidence</span>
-                            <span id="confidence-percentage" class="percentage-value">0.0%</span>
+                <!-- Input Panel -->
+                <section class="input-panel">
+                    <div class="panel-header">
+                        <div class="panel-header-left">
+                            <div class="panel-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                            </div>
+                            <span>Article Input</span>
                         </div>
-                        <div class="meter-bar">
-                            <div class="meter-fill" id="confidence-fill"></div>
+                        <div class="char-counter" id="char-counter">0 characters</div>
+                    </div>
+
+                    <div class="form-stack">
+                        <div class="form-field">
+                            <label for="headline-input">Headline / Title</label>
+                            <input type="text" id="headline-input"
+                                placeholder="Paste or type the news headline…"
+                                autocomplete="off" spellcheck="false">
+                        </div>
+
+                        <div class="form-field">
+                            <label for="body-input">Article Body <span class="optional-tag">optional</span></label>
+                            <textarea id="body-input" rows="9"
+                                placeholder="Paste the full article text here for a deeper analysis…"></textarea>
                         </div>
                     </div>
 
-                    <div class="verdict-explanation">
-                        <h4>System Decision Reasoning</h4>
-                        <p id="explanation-text"></p>
+                    <div class="input-actions">
+                        <button id="analyze-btn" class="btn btn-analyze" title="Press Enter or Ctrl+Enter to analyze">
+                            <span class="btn-icon">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                            </span>
+                            <span class="btn-label">Analyze Article <small style="font-size: 11px; opacity: 0.7; font-weight: 500; margin-left: 4px;">↵</small></span>
+                            <span class="btn-loader hidden">
+                                <span class="spinner"></span>
+                            </span>
+                        </button>
+                        <button id="clear-btn" class="btn btn-ghost">Clear</button>
                     </div>
 
-                    <!-- Web evidence output -->
-                    <div class="web-evidence-section">
-                        <h4>🌐 External Web References</h4>
-                        <div id="news-results-list" class="evidence-list">
-                            <p class="no-evidence">No matching news articles found on the live web.</p>
+                    <!-- Sample Pills -->
+                    <div class="samples-section">
+                        <span class="samples-label">Try a sample:</span>
+                        <div class="sample-pills">
+                            <button class="sample-pill pill-real" data-type="real"
+                                data-headline="Federal Reserve holds interest rates steady"
+                                data-body="The Federal Reserve on Wednesday kept its benchmark interest rate unchanged, pointing to solid economic growth and persistent but moderating inflation, opting to wait for further signs of pricing stability before making adjustments.">
+                                <span class="pill-dot dot-real"></span> Real News
+                            </button>
+                            <button class="sample-pill pill-fake" data-type="fake"
+                                data-headline="Secret lab discovers space technology that cures aging"
+                                data-body="An anonymous military official has revealed that a secret underground laboratory has successfully reverse-engineered alien propulsion technology to cure human aging and eradicate all cellular diseases within days.">
+                                <span class="pill-dot dot-fake"></span> Fake News
+                            </button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Results Panel -->
+                <section class="result-panel" id="result-panel">
+
+                    <!-- Placeholder State -->
+                    <div class="result-placeholder" id="result-placeholder">
+                        <div class="placeholder-graphic">
+                            <div class="placeholder-rings">
+                                <div class="ring ring-1"></div>
+                                <div class="ring ring-2"></div>
+                                <div class="ring ring-3"></div>
+                            </div>
+                            <div class="placeholder-shield">
+                                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                            </div>
+                        </div>
+                        <h2>Ready to Verify</h2>
+                        <p>Enter a headline or article body on the left. VeritasAI will cross-reference the ML model, live news sources, and fact-check databases to issue a verdict.</p>
+                        <div class="pipeline-steps">
+                            <div class="pipeline-step">
+                                <div class="step-num">1</div>
+                                <span>ML Classification</span>
+                            </div>
+                            <div class="pipeline-arrow">→</div>
+                            <div class="pipeline-step">
+                                <div class="step-num">2</div>
+                                <span>Web Search</span>
+                            </div>
+                            <div class="pipeline-arrow">→</div>
+                            <div class="pipeline-step">
+                                <div class="step-num">3</div>
+                                <span>LLM Reasoning</span>
+                            </div>
                         </div>
                     </div>
 
-                    <!-- Fact checks output -->
-                    <div class="web-evidence-section">
-                        <h4>🛡️ Existing Fact-Check Evaluations</h4>
-                        <div id="fact-results-list" class="evidence-list">
-                            <p class="no-evidence">No existing fact checks found for this topic.</p>
+                    <!-- Loading State -->
+                    <div class="result-loading hidden" id="result-loading">
+                        <div class="loading-sequence">
+                            <div class="loading-step active" id="ls-1">
+                                <div class="ls-icon">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                </div>
+                                <span>Running ML classifier…</span>
+                                <div class="ls-check hidden">✓</div>
+                            </div>
+                            <div class="loading-step" id="ls-2">
+                                <div class="ls-icon">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                                </div>
+                                <span>Searching live news &amp; fact-checks…</span>
+                                <div class="ls-check hidden">✓</div>
+                            </div>
+                            <div class="loading-step" id="ls-3">
+                                <div class="ls-icon">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 0 0-2V3z"/></svg>
+                                </div>
+                                <span>Synthesizing verdict with LLM…</span>
+                                <div class="ls-check hidden">✓</div>
+                            </div>
                         </div>
                     </div>
-                </div>
-            </section>
 
-            <section class="samples-section">
-                <h3>💡 Run Demo Samples</h3>
-                <div class="samples-grid">
-                    <div class="sample-box" data-type="real">
-                        <span class="sample-tag real-tag">REAL NEWS</span>
-                        <h4>Federal Reserve holds interest rates steady</h4>
-                        <p>The Federal Reserve on Wednesday kept its benchmark interest rate unchanged, pointing to solid economic growth and persistent but moderating inflation, opting to wait for further signs of pricing stability before making adjustments.</p>
+                    <!-- Result State -->
+                    <div class="result-output hidden" id="result-output">
+
+                        <!-- Verdict Hero -->
+                        <div class="verdict-hero" id="verdict-hero">
+                            <div class="verdict-icon-wrap" id="verdict-icon-wrap">
+                                <!-- injected by JS -->
+                            </div>
+                            <div class="verdict-meta">
+                                <div class="verdict-label" id="verdict-label">UNKNOWN</div>
+                                <div class="verdict-sub" id="verdict-sub">Verification in progress</div>
+                            </div>
+                            <div class="confidence-donut-wrap">
+                                <svg class="donut-svg" viewBox="0 0 80 80" width="80" height="80">
+                                    <circle class="donut-bg" cx="40" cy="40" r="32" fill="none" stroke-width="8"/>
+                                    <circle class="donut-fill" id="donut-fill" cx="40" cy="40" r="32" fill="none" stroke-width="8"
+                                        stroke-dasharray="201.06" stroke-dashoffset="201.06" stroke-linecap="round"
+                                        transform="rotate(-90 40 40)"/>
+                                </svg>
+                                <div class="donut-center">
+                                    <span class="donut-pct" id="donut-pct">0%</span>
+                                    <span class="donut-pct-label">confidence</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Status Bar -->
+                        <div class="status-bar" id="status-bar">
+                            <div class="status-bar-left">
+                                <span class="status-icon" id="status-icon"></span>
+                                <span id="status-label-value">—</span>
+                            </div>
+                            <div class="status-bar-right">
+                                <span class="model-tag">Ensemble ML</span>
+                                <span class="model-tag">Web Search</span>
+                                <span class="model-tag">LLM</span>
+                            </div>
+                        </div>
+
+                        <!-- ML Models Breakdown (Statement Credibility Priority) -->
+                        <div class="ensemble-grid" style="display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 12px; margin-bottom: 16px;">
+                            <!-- Model B: Statement Credibility (PRIMARY FOCUS) -->
+                            <div class="ensemble-card" style="padding: 12px 14px; background: var(--bg-surface); border: 1px solid var(--border-strong); border-radius: var(--radius-md); box-shadow: var(--shadow-sm);">
+                                <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-primary); font-weight: 700;">Model B · Statement Credibility (Primary ML)</div>
+                                <div id="model-b-val" style="font-size: 14px; font-weight: 700; color: var(--text-primary); margin-top: 4px;">—</div>
+                                <div style="font-size: 11px; color: var(--text-secondary); margin-top: 2px;">Headline Statement Truthfulness (LIAR Benchmark)</div>
+                            </div>
+                            <!-- Model A: Stylistics (SECONDARY/MINOR) -->
+                            <div class="ensemble-card" style="padding: 12px 14px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md); opacity: 0.8;">
+                                <div style="font-size: 10px; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); font-weight: 600;">Model A · Stylistics (Secondary)</div>
+                                <div id="model-a-val" style="font-size: 12px; font-weight: 600; color: var(--text-secondary); margin-top: 4px;">—</div>
+                                <div style="font-size: 10px; color: var(--text-muted); margin-top: 2px;">Article Surface Writing Tone</div>
+                            </div>
+                        </div>
+
+                        <!-- AI Reasoning -->
+                        <div class="reasoning-block">
+                            <div class="block-header">
+                                <div class="block-icon reasoning-icon">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 0 0-2V3z"/></svg>
+                                </div>
+                                <span>AI Reasoning</span>
+                            </div>
+                            <p id="explanation-text" class="reasoning-text"></p>
+                        </div>
+
+                        <!-- Evidence Tabs -->
+                        <div class="evidence-block">
+                            <div class="tab-bar">
+                                <button class="tab-btn active" data-tab="news">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2zm0 0H4a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/></svg>
+                                    Live News
+                                    <span class="tab-count" id="news-count">0</span>
+                                </button>
+                                <button class="tab-btn" data-tab="factcheck">
+                                    <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                                    Fact Checks
+                                    <span class="tab-count" id="fc-count">0</span>
+                                </button>
+                            </div>
+                            <div class="tab-content" id="tab-news">
+                                <div class="evidence-list" id="news-results-list">
+                                    <p class="no-evidence">No matching articles found.</p>
+                                </div>
+                            </div>
+                        <!-- Interactive Active Learning / Teach the System Card -->
+                        <div class="feedback-card" style="margin-top: 16px; padding: 14px 16px; background: var(--bg-surface); border: 1px solid var(--border); border-radius: var(--radius-md);">
+                            <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: var(--text-muted); display: flex; align-items: center; justify-content: space-between;">
+                                <span>🎓 Teach VeritasAI (Active Learning)</span>
+                                <span style="font-weight: 500; text-transform: none; color: var(--text-muted);">Did the system get it wrong or output UNCERTAIN?</span>
+                            </div>
+                            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px; margin-bottom: 10px;">
+                                Click below to submit the ground-truth label. The system will incrementally fine-tune its learning parameters on your correction.
+                            </div>
+                            <div style="display: flex; gap: 10px; align-items: center;">
+                                <button id="btn-mark-real" style="padding: 7px 14px; font-size: 12px; font-weight: 600; border-radius: var(--radius-sm); border: 1px solid var(--real-color); background: var(--real-dim); color: var(--real-color); cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                    ✓ Correct as REAL
+                                </button>
+                                <button id="btn-mark-fake" style="padding: 7px 14px; font-size: 12px; font-weight: 600; border-radius: var(--radius-sm); border: 1px solid var(--fake-color); background: var(--fake-dim); color: var(--fake-color); cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                                    ✗ Correct as FAKE
+                                </button>
+                                <span id="feedback-msg" style="font-size: 12px; font-weight: 600; margin-left: 8px;"></span>
+                            </div>
+                        </div>
+
                     </div>
-                    <div class="sample-box" data-type="fake">
-                        <span class="sample-tag fake-tag">FAKE NEWS</span>
-                        <h4>Secret lab discovers space technology that cures aging</h4>
-                        <p>An anonymous military official has revealed that a secret underground laboratory has successfully reverse-engineered alien propulsion technology to cure human aging and eradicate all cellular diseases within days.</p>
-                    </div>
-                </div>
-            </section>
+                </section>
+            </div>
         </main>
     </div>
 

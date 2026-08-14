@@ -1,0 +1,7 @@
+text,label,clean_text
+Test news headline about defense pact,REAL,test news headline about defense pact
+"Pakistan, Saudi Arabia, and Turkey officially signed a major tripartite military synergy pact",REAL,pakistan saudi arabia and turkey officially signed a major tripartite military synergy pact
+"Pakistan, Saudi Arabia, and Turkey officially signed a major tripartite military synergy pact",REAL,pakistan saudi arabia and turkey officially signed a major tripartite military synergy pact
+"NASA announces that due to a critical software logic flaw discovered in the SLS upper stage during mid-August 2026, the crewed Artemis II lunar flyby mission has been abruptly postponed until late 2027.",FAKE,nasa announces that due to a critical software logic flaw discovered in the sls upper stage during midaugust the crewed artemis ii lunar flyby mission has been abruptly postponed until late
+"Pakistan, Saudi Arabia, and Turkey officially signed a major tripartite military synergy pact",REAL,pakistan saudi arabia and turkey officially signed a major tripartite military synergy pact
+"Following a sudden regulatory block by the White House over domestic manufacturing sovereignty in August 2026, Nippon Steel has officially terminated its multi-billion dollar acquisition of U.S. Steel.",FAKE,following a sudden regulatory block by the white house over domestic manufacturing sovereignty in august nippon steel has officially terminated its multibillion dollar acquisition of us steel

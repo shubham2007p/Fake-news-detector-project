@@ -2,31 +2,67 @@ import re
 import string
 import pandas as pd
 
-def clean_text(text):
+# ── Label-leakage blocklist ───────────────────────────────────────────────────
+# These words are directly correlated with dataset labels, not with journalistic
+# content. Including them causes the model to predict based on the word itself
+# rather than the substance of the article. Must be stripped at both train AND
+# inference time.
+META_BLOCKLIST = {
+    # Direct label words
+    "fake", "real", "hoax", "satire", "satirical",
+    # Fact-check verdict words
+    "debunked", "misinformation", "disinformation", "misleading",
+    "fabricated", "false", "unverified", "unsubstantiated",
+    "conspiracy", "clickbait",
+    # Phrases that appear as metadata/tags in training data
+    "fact check", "factcheck", "fact-check",
+    "breaking news",
+    # Sensationalist scare-words (neutralized to prevent TF-IDF panic bias)
+    "radiation", "frozen", "secret clause", "bioweapon", "bio weapon", "bio-weapon",
+    "chemtrails", "toxic leakage", "illuminati", "alien invasion", "apocalypse",
+    "doomsday", "leaked memo", "secret deal", "deep state",
+}
+
+# Compile a regex that matches any blocklisted word/phrase as whole words
+_BLOCKLIST_PATTERN = re.compile(
+    r"\b(" + "|".join(re.escape(w) for w in sorted(META_BLOCKLIST, key=len, reverse=True)) + r")\b",
+    re.IGNORECASE
+)
+
+
+def clean_text(text, strip_meta=True):
     """
-    Cleans raw text data: lowercases, removes HTML, punctuation, special chars, and extra whitespace.
+    Cleans raw text data for ML input.
+    - Lowercases
+    - Removes HTML tags, URLs, punctuation, numbers
+    - Optionally strips META_BLOCKLIST label-leakage words (default: True)
     """
     if not isinstance(text, str):
         return ""
-    
+
     # Lowercase
     text = text.lower()
-    
-    # Remove HTML tags if any
+
+    # Remove HTML tags
     text = re.sub(r'<.*?>', '', text)
-    
+
     # Remove URLs
     text = re.sub(r'https?://\S+|www\.\S+', '', text)
-    
+
+    # Strip label-leakage / meta words BEFORE punctuation removal
+    # so multi-word phrases like "fact check" still match
+    if strip_meta:
+        text = _BLOCKLIST_PATTERN.sub(' ', text)
+
     # Remove punctuation
     text = text.translate(str.maketrans('', '', string.punctuation))
-    
-    # Remove numbers and special characters
+
+    # Remove numbers
     text = re.sub(r'\d+', '', text)
-    
-    # Remove extra spaces
+
+    # Collapse whitespace
     text = re.sub(r'\s+', ' ', text).strip()
-    
+
     return text
 
 def preprocess_dataset(input_csv, output_csv=None):

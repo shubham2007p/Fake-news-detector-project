@@ -1,81 +1,85 @@
 def combine_predictions(ml_res, news_evidence, fact_evidence):
     """
-    Implements the conflict resolution reasoning layer:
-    Combines ML prediction with external fact checks and news evidence.
+    Implements the conflict resolution reasoning layer & Uncertain Logic Gate:
+    If a claim lacks a cross-referenceable source on fact-checking repositories
+    (e.g., FactCheck.org, AltNews, BOOM) or official Tier 1/2 news/government portals,
+    it MUST output UNCERTAIN (Low Confidence) rather than guessing.
     """
-    ml_pred = ml_res["prediction"] # "REAL" or "FAKE"
+    ml_pred = ml_res["prediction"]  # "REAL" or "FAKE"
     ml_conf = ml_res["confidence"]  # Float percentage
-    
-    # Analyze fact checks for consensus
+
+    # Analyze fact checks
     fact_verdicts_false = 0
-    fact_verdicts_true = 0
-    
+    fact_verdicts_true  = 0
     for fact in fact_evidence:
         verdict = fact.get("verdict", "").lower()
         if any(term in verdict for term in ["false", "incorrect", "misleading", "pants on fire", "fake"]):
             fact_verdicts_false += 1
         elif any(term in verdict for term in ["true", "correct", "accurate"]):
             fact_verdicts_true += 1
-            
-    # Analyze news evidence presence
-    news_count = len(news_evidence)
+
+    # Analyze news sources
     has_tier1_news = any("Tier 1" in art.get("tier", "") for art in news_evidence)
-    
-    # Conflict Resolution Logic:
-    final_verdict = ml_pred
-    status = "Verified"
-    reasoning = ""
-    
+    has_tier2_news = any("Tier 2" in art.get("tier", "") for art in news_evidence)
+    has_credible_sources = (fact_verdicts_false > 0 or fact_verdicts_true > 0 or has_tier1_news or has_tier2_news)
+
+    # ── UNCERTAIN LOGIC GATE ──────────────────────────────────────────────────
+    # Rule: If no cross-referenceable source on fact-check repositories or official news portals exists,
+    # output UNCERTAIN / Unverified (Low Confidence) rather than guessing.
+    if not has_credible_sources:
+        return {
+            "verdict": "UNCERTAIN",
+            "status": "Unverified (Low Confidence)",
+            "reasoning": (
+                f"No cross-referenceable evidence was found on fact-checking repositories (FactCheck.org, AltNews, BOOM) "
+                f"or official news/government portals (PIB, PTI, Reuters, AP, The Hindu). "
+                f"The system outputs **UNCERTAIN** rather than guessing."
+            ),
+            "has_conflict": False
+        }
+
+    # ── Verified Decision Tree ─────────────────────────────────────────────────
     if fact_verdicts_false > 0:
-        if ml_pred == "FAKE":
-            final_verdict = "FAKE"
-            status = "Verified Fake"
-            reasoning = f"The ML model predicted FAKE ({ml_conf}%) and external fact-checking databases verify the claim is FALSE."
-        else:
-            final_verdict = "FAKE"
-            status = "Contradicted (Likely Fake)"
-            reasoning = "The ML model predicted REAL, but external fact-checking databases confirmed this claim is FALSE. External evidence overrides model."
-            
-    elif fact_verdicts_true > 0:
+        return {
+            "verdict": "FAKE",
+            "status": "Verified Fake" if ml_pred == "FAKE" else "Contradicted (Likely Fake)",
+            "reasoning": (
+                f"External fact-checking repositories verified this claim is **FALSE**. "
+                f"Fact-check evidence takes absolute priority."
+            ),
+            "has_conflict": ml_pred != "FAKE"
+        }
+
+    if fact_verdicts_true > 0:
+        return {
+            "verdict": "REAL",
+            "status": "Verified Real" if ml_pred == "REAL" else "Contradicted (Likely Real)",
+            "reasoning": (
+                f"External fact-checking repositories confirmed this claim is **TRUE**. "
+                f"Fact-check evidence takes absolute priority."
+            ),
+            "has_conflict": ml_pred != "REAL"
+        }
+
+    if has_tier1_news or has_tier2_news:
         if ml_pred == "REAL":
-            final_verdict = "REAL"
-            status = "Verified Real"
-            reasoning = f"The ML model predicted REAL ({ml_conf}%) and external fact-checking databases confirm the claim is TRUE."
+            return {
+                "verdict": "REAL",
+                "status": "Likely Real",
+                "reasoning": f"Credible news organizations are actively reporting on this event, aligning with the local ML prediction ({ml_conf}%).",
+                "has_conflict": False
+            }
         else:
-            final_verdict = "REAL"
-            status = "Contradicted (Likely Real)"
-            reasoning = "The ML model predicted FAKE, but external fact-checking databases confirm the claim is TRUE. External evidence overrides model."
-            
-    elif news_count > 0:
-        if ml_pred == "REAL":
-            final_verdict = "REAL"
-            status = "Likely Real"
-            reasoning = f"The ML model predicted REAL ({ml_conf}%) and multiple news agencies are currently reporting this event."
-        else:
-            # ML says FAKE, but there is active news reporting
-            if has_tier1_news:
-                final_verdict = "UNCERTAIN"
-                status = "Conflicting Evidence"
-                reasoning = "The ML model flagged structural markers of fake news, but credible Tier-1 news organizations are actively reporting on the topic. Verification is required."
-            else:
-                final_verdict = "FAKE"
-                status = "Likely Fake"
-                reasoning = "The ML model flagged this text as FAKE, and while news matches exist, they lack validation from top-tier news agencies."
-                
-    else:
-        # No web evidence found
-        if ml_pred == "REAL":
-            final_verdict = "REAL"
-            status = "Unverified Real"
-            reasoning = f"The ML model predicted REAL ({ml_conf}%), but no matching web articles or fact-checks were found to verify this claim."
-        else:
-            final_verdict = "FAKE"
-            status = "Unverified Fake"
-            reasoning = f"The ML model predicted FAKE ({ml_conf}%), and no credible web articles support the claim."
-            
+            return {
+                "verdict": "UNCERTAIN",
+                "status": "Conflicting Evidence",
+                "reasoning": f"The ML ensemble flagged stylistic/statement concerns, but credible news sources are actively reporting this event. Further verification is required.",
+                "has_conflict": True
+            }
+
     return {
-        "verdict": final_verdict,
-        "status": status,
-        "reasoning": reasoning,
-        "has_conflict": "Contradicted" in status or "Conflict" in status
+        "verdict": "UNCERTAIN",
+        "status": "Unverified (Low Confidence)",
+        "reasoning": "Lacks sufficient cross-referenceable sources to issue a definitive REAL or FAKE verdict.",
+        "has_conflict": False
     }
