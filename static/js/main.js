@@ -70,10 +70,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function saveHistory() {
         try {
-            // Keep last 50 items
-            if (history.length > 50) history = history.slice(0, 50);
-            localStorage.setItem("veritas_history", JSON.stringify(history));
-        } catch(e) {}
+            // Keep top 30 items, stripping extra evidence bloat for localStorage safety
+            const cleanHistory = (history || []).slice(0, 30).map(item => ({
+                id: item.id,
+                headline: item.headline,
+                verdict: item.verdict,
+                confidence: item.confidence,
+                timestamp: item.timestamp,
+                body: item.body,
+                data: {
+                    verdict: item.data ? item.data.verdict : item.verdict,
+                    status_lbl: item.data ? item.data.status_lbl : "",
+                    reasoning: item.data ? item.data.reasoning : "",
+                    prediction: item.data ? item.data.prediction : "",
+                    confidence: item.data ? item.data.confidence : item.confidence,
+                    model_a: item.data ? item.data.model_a : null,
+                    model_b: item.data ? item.data.model_b : null,
+                    news_evidence: (item.data && item.data.news_evidence) ? item.data.news_evidence.slice(0, 3) : [],
+                    fact_evidence: (item.data && item.data.fact_evidence) ? item.data.fact_evidence.slice(0, 3) : []
+                }
+            }));
+            localStorage.setItem("veritas_history", JSON.stringify(cleanHistory));
+        } catch(e) {
+            console.error("LocalStorage save error:", e);
+        }
     }
 
     function addToHistory(headline, body, data) {
@@ -133,7 +153,7 @@ document.addEventListener("DOMContentLoaded", () => {
             const verdictClass = entry.verdict ? entry.verdict.toLowerCase() : "uncertain";
             const timeAgo = formatTimeAgo(entry.timestamp);
             const rawTitle = (entry.headline || entry.body || "News Verification").trim();
-            const truncatedHeadline = rawTitle.length > 42 ? rawTitle.substring(0, 42) + "…" : rawTitle;
+            const truncatedHeadline = rawTitle.length > 40 ? rawTitle.substring(0, 40) + "…" : rawTitle;
 
             return `<div class="history-item" data-id="${entry.id}">
                 <div class="history-verdict-dot ${verdictClass}"></div>
@@ -343,11 +363,10 @@ document.addEventListener("DOMContentLoaded", () => {
                 advanceLoadingStep(2);
                 advanceLoadingStep(3);
 
-                // Small delay before showing results (feels polished)
+                addToHistory(title, text, data);
                 setTimeout(() => {
                     displayResult(data);
-                    addToHistory(title, text, data);
-                }, 600);
+                }, 400);
             } else {
                 clearTimeout(step1Timer);
                 clearTimeout(step2Timer);
