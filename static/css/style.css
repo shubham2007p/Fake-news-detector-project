@@ -557,12 +557,14 @@ body {
     gap: 14px;
 }
 
+.form-group,
 .form-field {
     display: flex;
     flex-direction: column;
     gap: 6px;
 }
 
+.form-label,
 .form-field label {
     font-size: 12px;
     font-weight: 600;
@@ -581,14 +583,16 @@ body {
     border-radius: 4px;
 }
 
+.form-control,
+.textarea-control,
 .form-field input,
 .form-field textarea {
     width: 100%;
     padding: 11px 14px;
-    background: var(--bg-elevated);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-md);
-    color: var(--text-primary);
+    background: var(--bg-elevated) !important;
+    border: 1px solid var(--border) !important;
+    border-radius: var(--radius-md) !important;
+    color: var(--text-primary) !important;
     font-family: inherit;
     font-size: 13px;
     line-height: 1.5;
@@ -597,16 +601,21 @@ body {
     resize: vertical;
 }
 
+.form-control::placeholder,
+.textarea-control::placeholder,
 .form-field input::placeholder,
 .form-field textarea::placeholder {
-    color: var(--text-muted);
+    color: var(--text-muted) !important;
+    opacity: 0.7;
 }
 
+.form-control:focus,
+.textarea-control:focus,
 .form-field input:focus,
 .form-field textarea:focus {
-    border-color: var(--border-focus);
-    background: var(--bg-overlay);
-    box-shadow: 0 0 0 3px var(--accent-glow);
+    border-color: var(--border-focus) !important;
+    background: var(--bg-overlay) !important;
+    box-shadow: 0 0 0 3px var(--accent-glow) !important;
 }
 
 /* Action Row */
@@ -854,24 +863,69 @@ body {
 /* Loading */
 .result-loading {
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
     height: 100%;
     padding: 40px;
+    text-align: center;
+    gap: 16px;
 }
 
+.radar-container {
+    position: relative;
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 2px solid var(--border-focus);
+    background: var(--bg-overlay);
+    overflow: hidden;
+    margin-bottom: 8px;
+}
+
+.radar-sweep {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: conic-gradient(from 0deg at 50% 50%, rgba(59, 130, 246, 0.4) 0deg, transparent 60deg);
+    animation: ls-spin 1.5s linear infinite;
+}
+
+.radar-center {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 10px;
+    height: 10px;
+    background: var(--accent);
+    border-radius: 50%;
+    box-shadow: 0 0 10px var(--accent);
+}
+
+.loading-sub {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin-bottom: 12px;
+}
+
+.loading-progress-steps,
 .loading-sequence {
     display: flex;
     flex-direction: column;
-    gap: 14px;
-    width: 320px;
+    gap: 10px;
+    width: 100%;
+    max-width: 380px;
 }
 
+.l-step,
 .loading-step {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 14px 16px;
+    padding: 12px 16px;
     background: var(--bg-elevated);
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
@@ -879,34 +933,41 @@ body {
     color: var(--text-muted);
     transition: all 0.3s ease;
 }
+
+.l-step.active,
 .loading-step.active {
     border-color: var(--border-focus);
     color: var(--text-primary);
     background: var(--bg-overlay);
+    box-shadow: 0 0 12px var(--accent-glow);
 }
+
+.l-step.done,
 .loading-step.done {
     border-color: rgba(52,211,153,0.3);
     color: var(--real-color);
     background: var(--real-dim);
 }
 
-.ls-icon {
-    color: inherit;
-    opacity: 0.8;
+.l-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--text-muted);
     flex-shrink: 0;
 }
 
-.loading-step.active .ls-icon {
-    animation: ls-spin 1s linear infinite;
+.l-step.active .l-dot {
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
 }
+
+.l-step.done .l-dot {
+    background: var(--real-color);
+    box-shadow: 0 0 8px var(--real-color);
+}
+
 @keyframes ls-spin { to { transform: rotate(360deg); } }
-
-.loading-step span { flex: 1; }
-
-.ls-check {
-    font-weight: 700;
-    color: var(--real-color);
-}
 
 /* ── RESULT OUTPUT ── */
 .result-output {
