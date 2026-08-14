@@ -488,48 +488,52 @@ document.addEventListener("DOMContentLoaded", () => {
         explanationText.innerHTML = cleanReasoning;
 
         // ── News Evidence ──
-        newsCount.textContent = news.length;
-        newsResultsList.innerHTML = "";
-        if (news.length > 0) {
-            news.forEach(item => {
-                const el = document.createElement("div");
-                el.className = "evidence-item";
-                el.innerHTML = `
-                    <div class="evidence-meta">
-                        <span class="evidence-source">${escapeHtml(item.source)} · ${escapeHtml(item.published_at || "")}</span>
-                        <span class="evidence-tier">${escapeHtml(item.tier || "")}</span>
-                    </div>
-                    <a href="${escapeHtml(item.url || "#")}" target="_blank" rel="noopener" class="evidence-title">${escapeHtml(item.title || "Untitled")}</a>
-                    <p class="evidence-desc">${escapeHtml(item.description || "")}</p>
-                `;
-                newsResultsList.appendChild(el);
-            });
-        } else {
-            newsResultsList.innerHTML = `<p class="no-evidence">No matching news articles found in live search.</p>`;
+        if (newsCount) newsCount.textContent = news.length;
+        if (newsResultsList) {
+            newsResultsList.innerHTML = "";
+            if (news.length > 0) {
+                news.forEach(item => {
+                    const el = document.createElement("div");
+                    el.className = "evidence-item";
+                    el.innerHTML = `
+                        <div class="evidence-meta">
+                            <span class="evidence-source">${escapeHtml(item.source)} · ${escapeHtml(item.published_at || "")}</span>
+                            <span class="evidence-tier">${escapeHtml(item.tier || "")}</span>
+                        </div>
+                        <a href="${escapeHtml(item.url || "#")}" target="_blank" rel="noopener" class="evidence-title">${escapeHtml(item.title || "Untitled")}</a>
+                        <p class="evidence-desc">${escapeHtml(item.description || "")}</p>
+                    `;
+                    newsResultsList.appendChild(el);
+                });
+            } else {
+                newsResultsList.innerHTML = `<p class="no-evidence">No matching news articles found in live search.</p>`;
+            }
         }
 
         // ── Fact Check Evidence ──
-        fcCount.textContent = facts.length;
-        factResultsList.innerHTML = "";
-        if (facts.length > 0) {
-            facts.forEach(item => {
-                const isTrue = !(item.verdict || "").toLowerCase().includes("false");
-                const verdictColor = isTrue ? "var(--real-color)" : "var(--fake-color)";
-                const el = document.createElement("div");
-                el.className = "evidence-item";
-                el.innerHTML = `
-                    <div class="evidence-meta">
-                        <span class="evidence-source">Fact-Check by ${escapeHtml(item.publisher || "Unknown")}</span>
-                        <span class="evidence-tier">${escapeHtml(item.tier || "")}</span>
-                    </div>
-                    <p class="evidence-desc"><strong>Claim by ${escapeHtml(item.claimant || "Unknown")}:</strong> "${escapeHtml(item.claim_text || "")}"</p>
-                    <div class="evidence-rating">Verdict: <span style="color:${verdictColor};font-weight:700;">${escapeHtml(item.verdict || "—")}</span></div>
-                    <a href="${escapeHtml(item.review_url || "#")}" target="_blank" rel="noopener" class="evidence-read-link">Read full review →</a>
-                `;
-                factResultsList.appendChild(el);
-            });
-        } else {
-            factResultsList.innerHTML = `<p class="no-evidence">No pre-existing fact checks found for this topic.</p>`;
+        if (fcCount) fcCount.textContent = facts.length;
+        if (factResultsList) {
+            factResultsList.innerHTML = "";
+            if (facts.length > 0) {
+                facts.forEach(item => {
+                    const isTrue = !(item.verdict || "").toLowerCase().includes("false");
+                    const verdictColor = isTrue ? "var(--real-color)" : "var(--fake-color)";
+                    const el = document.createElement("div");
+                    el.className = "evidence-item";
+                    el.innerHTML = `
+                        <div class="evidence-meta">
+                            <span class="evidence-source">Fact-Check by ${escapeHtml(item.publisher || "Unknown")}</span>
+                            <span class="evidence-tier">${escapeHtml(item.tier || "")}</span>
+                        </div>
+                        <p class="evidence-desc"><strong>Claim by ${escapeHtml(item.claimant || "Unknown")}:</strong> "${escapeHtml(item.claim_text || "")}"</p>
+                        <div class="evidence-rating">Verdict: <span style="color:${verdictColor};font-weight:700;">${escapeHtml(item.verdict || "—")}</span></div>
+                        <a href="${escapeHtml(item.review_url || "#")}" target="_blank" rel="noopener" class="evidence-read-link">Read full review →</a>
+                    `;
+                    factResultsList.appendChild(el);
+                });
+            } else {
+                factResultsList.innerHTML = `<p class="no-evidence">No pre-existing fact checks found for this topic.</p>`;
+            }
         }
 
         // Scroll to top of result
