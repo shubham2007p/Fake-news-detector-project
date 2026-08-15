@@ -1,4 +1,4 @@
-﻿<div align="center">
+<div align="center">
 
 ```
 ██╗   ██╗███████╗██████╗ ██╗████████╗ █████╗ ███████╗ █████╗ ██╗
@@ -64,7 +64,9 @@ The result? A system that catches misinformation even when it *sounds* credible,
 
 ## Live Demo
 
-> Screenshots and demo video are embedded below after screen recording.
+> Click the video below for a full demo walkthrough.
+
+[![Demo Video](docs/assets/video_thumb.png)](docs/assets/demo.webp)
 
 ---
 
@@ -344,6 +346,8 @@ Model A (Stylistic TF-IDF + Logistic Regression) evaluated on a 20% stratified h
 
 > The confusion matrix heatmap is auto-generated at `static/confusion_matrix.png` after running `train.py`.
 
+![Confusion Matrix](docs/assets/confusion_matrix.png)
+
 **Note:** These metrics reflect Model A alone. The full ensemble (Model A + Model B + Web Evidence + LLM) achieves substantially higher real-world accuracy by cross-referencing external ground truth.
 
 ---
@@ -417,7 +421,20 @@ Submit a user correction to the Active Learning memory system.
 
 ## Screenshots
 
-> Screenshots and demo recording are inserted here after screen capture.
+### Dark Mode Dashboard
+![Dark Mode Dashboard](docs/assets/screenshot_dark.png)
+
+### Light Mode Dashboard
+![Light Mode Dashboard](docs/assets/screenshot_light.png)
+
+### Verdict Result Panel
+![Verdict Result](docs/assets/screenshot_verdict.png)
+
+### Evidence Tabs
+![Evidence Tabs](docs/assets/screenshot_evidence.png)
+
+### Search History Sidebar
+![Search History Sidebar](docs/assets/screenshot_history.png)
 
 ---
 
