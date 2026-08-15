@@ -916,12 +916,93 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    // ── KEYBOARD SHORTCUT ─────────────────────────────────────────────────────
+    // ── JUDGES & ARCHITECTURE BRIEF MODAL ──────────────────────────────────────
+    const judgesModal     = document.getElementById("judges-modal");
+    const topbarJudgesBtn = document.getElementById("topbar-judges-btn");
+    const sidebarAboutBtn = document.getElementById("sidebar-about-btn");
+    const judgesCloseBtn  = document.getElementById("judges-modal-close");
+    const judgesDoneBtn   = document.getElementById("judges-modal-done-btn");
+    const jtabBtns        = document.querySelectorAll(".judges-tab-btn");
+    const jtabContents    = document.querySelectorAll(".judges-tab-content");
+
+    function openJudgesModal() {
+        if (judgesModal) {
+            judgesModal.classList.remove("hidden");
+            document.body.style.overflow = "hidden";
+            // Always open on the Overview tab
+            jtabBtns.forEach(b => b.classList.remove("active"));
+            jtabContents.forEach(c => c.classList.remove("active"));
+            const firstBtn = document.querySelector('.judges-tab-btn[data-jtab="overview"]');
+            const firstContent = document.getElementById('jtab-overview');
+            if (firstBtn) firstBtn.classList.add("active");
+            if (firstContent) firstContent.classList.add("active");
+            // Scroll modal body to top
+            const modalBody = judgesModal.querySelector(".judges-modal-body");
+            if (modalBody) modalBody.scrollTop = 0;
+        }
+    }
+
+    function closeJudgesModal() {
+        if (judgesModal) {
+            judgesModal.classList.add("hidden");
+            document.body.style.overflow = "";
+        }
+    }
+
+    if (topbarJudgesBtn) {
+        topbarJudgesBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            openJudgesModal();
+        });
+    }
+
+    if (sidebarAboutBtn) {
+        sidebarAboutBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            openJudgesModal();
+        });
+    }
+
+    if (judgesCloseBtn)  judgesCloseBtn.addEventListener("click", closeJudgesModal);
+    if (judgesDoneBtn)   judgesDoneBtn.addEventListener("click", closeJudgesModal);
+
+    if (judgesModal) {
+        judgesModal.addEventListener("click", (e) => {
+            if (e.target === judgesModal) {
+                closeJudgesModal();
+            }
+        });
+    }
+
+    // Modal Tab Switching — with scroll-to-top on each switch
+    jtabBtns.forEach(btn => {
+        btn.addEventListener("click", () => {
+            const targetTab = btn.getAttribute("data-jtab");
+            jtabBtns.forEach(b => b.classList.remove("active"));
+            jtabContents.forEach(c => c.classList.remove("active"));
+            btn.classList.add("active");
+            const activeContent = document.getElementById(`jtab-${targetTab}`);
+            if (activeContent) {
+                requestAnimationFrame(() => {
+                    activeContent.classList.add("active");
+                    // Scroll body back to top when switching tabs
+                    const modalBody = judgesModal ? judgesModal.querySelector(".judges-modal-body") : null;
+                    if (modalBody) modalBody.scrollTop = 0;
+                });
+            }
+        });
+    });
+
+    // ── KEYBOARD SHORTCUTS ───────────────────────────────────────────────────
     document.addEventListener("keydown", (e) => {
         // Ctrl/Cmd + Enter = Analyze
         if ((e.ctrlKey || e.metaKey) && e.key === "Enter") {
             e.preventDefault();
             analyzeBtn.click();
+        }
+        // Esc key = Close modal
+        if (e.key === "Escape" && judgesModal && !judgesModal.classList.contains("hidden")) {
+            closeJudgesModal();
         }
     });
 
@@ -929,3 +1010,4 @@ document.addEventListener("DOMContentLoaded", () => {
     loadHistory();
     headlineInput.focus();
 });
+

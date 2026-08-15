@@ -33,7 +33,7 @@ env/
 # ML artifacts and large datasets
 data/news.csv
 data/clean_news.csv
-models/*.pkl
+models/
 
 # Secrets
 .env
