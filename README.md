@@ -20,7 +20,9 @@
 
 **A production-grade, multi-signal AI system that detects fake news using ensemble ML, real-time web evidence, and LLM reasoning — built for India and the world.**
 
-[View Demo](#-live-demo) · [Architecture](#-system-architecture) · [Quick Start](#-quick-start) · [Features](#-core-features) · [API Docs](#-api-reference)
+🔴 **[LIVE DEMO](https://shubham2007p.github.io/Fake-news-detector-project/)** · [View Docs](#-system-architecture) · [Quick Start](#-quick-start) · [Features](#-core-features) · [API Docs](#-api-reference)
+
+<sub>*Status: Production Ready* — See the system in action at the link above</sub>
 
 </div>
 
@@ -64,9 +66,9 @@ The result? A system that catches misinformation even when it *sounds* credible,
 
 ## Live Demo
 
-> Click the video below for a full demo walkthrough.
-
-[![Demo Video](docs/assets/video_thumb.png)](docs/assets/demo.webp)
+> 🔴 **LIVE** — **[Visit the Production Demo](https://shubham2007p.github.io/Fake-news-detector-project/)**
+>
+> Experience VeritasAI in real-time. Paste any news headline or article, and watch the five-layer system analyze it for authenticity.
 
 ---
 
@@ -501,7 +503,7 @@ Output (JSON):
 
 > "It is better to say I do not know than to be confidently wrong."
 
-If no cross-referenceable evidence exists in Tier-1/2 news or fact-checking repositories, the system outputs `UNCERTAIN / Unverified (Low Confidence)` rather than guessing. This prevents the spread of misinformation by over-confident AI.
+If no cross-referenceable evidence exists in Tier-1/2 news or fact-checking repositories, the system outputs `UNCERTAIN / Unverified (Low Confidence)` rather than guessing. This prevents the spread of false confidence in ambiguous situations.
 
 ---
 
@@ -524,5 +526,7 @@ This project is licensed under the **MIT License**.
 <div align="center">
 
 Built with precision for the IBM Project &nbsp;|&nbsp; VeritasAI — *Because truth matters.*
+
+**🔴 [LIVE DEMO](https://shubham2007p.github.io/Fake-news-detector-project/) — Production Ready**
 
 </div>
